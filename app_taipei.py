@@ -92,7 +92,7 @@ def test_ios(app):
 def test_link_response(link):
 	link_object = app_link(link)
 	conn = http.client.HTTPSConnection(link_object.get_host())
-	conn.request("GET", "{}?{}".format(link_object.get_path(), link_object.get_query()), body=None)
+	conn.request("HEAD", "{}?{}".format(link_object.get_path(), link_object.get_query()))
 	res = conn.getresponse()
 	if res.status == 200:
 		return True
