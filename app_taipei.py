@@ -25,10 +25,10 @@ class app_link(object):
 		return self.query
 
 def green_text(string):
-	return '\033[1;32m{}\033[0m'.format(string)
+	return '\033[0;32m{}\033[0m'.format(string)
 
 def red_text(string):
-	return '\033[1;31m{}\033[0m'.format(string)
+	return '\033[0;31m{}\033[0m'.format(string)
 
 def get_apps_list(app_list_id):
 	conn = http.client.HTTPConnection("apps.taipei")
@@ -67,15 +67,15 @@ def test_app(app):
 	ios_status = test_ios(app)
 
 	result = generate_result(android_status, ios_status)
-	print(app_name + '........ ' + result)
+	print(result + ' ' + app_name )
 
 def generate_result(android_status, ios_status):
 	failed = [name for status, name in zip([android_status, ios_status], ("Android", "iOS")) if not status]
 	result = ','.join(failed)
 	if (android_status and ios_status) == True:
-		return green_text("Passed")
+		return green_text("[ Passed ]")
 	else:
-		return red_text("Failed ... " + result)
+		return red_text("[ Failed: " + result + "]")
 
 def test_android(app):
 	if app["androidlink"] == "":
