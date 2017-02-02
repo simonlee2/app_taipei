@@ -117,11 +117,5 @@ if __name__ == "__main__":
 	app_list_json = load_json(app_list_string)["d"]
 	test = load_json(app_list_json)
 
-	start = timer()
 	num_cores = multiprocessing.cpu_count()
 	Parallel(n_jobs=num_cores)(delayed(test_app)(app) for app in test)
-	end = timer()
-	print(end - start)
-
-	with open("applist.json", "w") as json_file:
-		json.dump(app_list_string, json_file)
