@@ -5,6 +5,9 @@ import sys
 import json
 import re
 
+from joblib import Parallel, delayed
+import multiprocessing
+
 class app_link(object):
 	def __init__(self, full_url):
 		o = urlparse(full_url)
@@ -89,7 +92,7 @@ def test_ios(app):
 def test_link_response(link):
 	link_object = app_link(link)
 	conn = http.client.HTTPSConnection(link_object.get_host())
-	conn.request("GET", "{}?{}".format(link_object.get_path(), link_object.get_query()))
+	conn.request("GET", "{}?{}".format(link_object.get_path(), link_object.get_query()), body=None)
 	res = conn.getresponse()
 	if res.status == 200:
 		return True
@@ -115,9 +118,8 @@ if __name__ == "__main__":
 	test = load_json(app_list_json)
 
 	start = timer()
-	for app in test:
-		test_app(app)
-
+	num_cores = multiprocessing.cpu_count()
+	Parallel(n_jobs=num_cores)(delayed(test_app)(app) for app in test)
 	end = timer()
 	print(end - start)
 
