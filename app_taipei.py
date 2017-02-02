@@ -8,6 +8,8 @@ import re
 from joblib import Parallel, delayed
 import multiprocessing
 
+connections = {key : http.client.HTTPSConnection(host) for (key, host) in [('android', "play.google.com"), ('ios', "itunes.apple.com")]}
+
 class app_link(object):
 	def __init__(self, full_url):
 		o = urlparse(full_url)
@@ -81,19 +83,19 @@ def test_android(app):
 	if app["androidlink"] == "":
 		return True
 
-	return test_link_response(app["androidlink"])
+	return test_link_response(app["androidlink"], connections['android'])
 
 def test_ios(app):
 	if app["ioslink"] == "":
 		return True
 
-	return test_link_response(app["ioslink"]) # and test_app_name(app["ioslink"], app["name"])
+	return test_link_response(app["ioslink"], connections['ios']) # and test_app_name(app["ioslink"], app["name"])
 
-def test_link_response(link):
+def test_link_response(link, conn):
 	link_object = app_link(link)
-	conn = http.client.HTTPSConnection(link_object.get_host())
-	conn.request("GET", "{}?{}".format(link_object.get_path(), link_object.get_query()), body=None)
+	conn.request("HEAD", "{}?{}".format(link_object.get_path(), link_object.get_query()))
 	res = conn.getresponse()
+	res.read()
 	if res.status == 200:
 		return True
 	else:
@@ -103,7 +105,7 @@ def test_link_response(link):
 def test_app_name(link, app_name):
 	link_object = app_link(link)
 	conn = http.client.HTTPSConnection(link_object.get_host())
-	conn.request("GET", "{}?{}".format(link_object.get_path(), link_object.get_query()))
+	conn.request("HEAD", "{}?{}".format(link_object.get_path(), link_object.get_query()))
 	res = conn.getresponse()
 	data = res.read(500)
 	decoded_string = data.decode("utf-8").encode(sys.stdin.encoding, 'replace').decode(sys.stdin.encoding)
@@ -118,8 +120,11 @@ if __name__ == "__main__":
 	test = load_json(app_list_json)
 
 	start = timer()
-	num_cores = multiprocessing.cpu_count()
-	Parallel(n_jobs=num_cores)(delayed(test_app)(app) for app in test)
+	# num_cores = multiprocessing.cpu_count()
+	# Parallel(n_jobs=num_cores)(delayed(test_app)(app) for app in test)
+
+	for app in test:
+		test_app(app)
 	end = timer()
 	print(end - start)
 
