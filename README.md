@@ -1,4 +1,4 @@
-# app_taipei
+# apps_taipei
 Simple script to perform health check on links to the app stores
 
 ## Dependencies
